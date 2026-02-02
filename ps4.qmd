@@ -63,6 +63,27 @@ alt.renderers.enable("png")
 
 
 ```{python}
+import requests 
+
+# read in the web page
+url = 'https://oig.hhs.gov/fraud/enforcement/'
+response = requests.get(url)
+
+text = response.text
+print(text) #looks right
+
+# parse the HTML code with beautifulsoup
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(text, 'lxml')
+
+print(soup)
+```
+
+```{python}
+#Scrape the following into a dataframe: * Title of the enforcement action * Date * Category (e.g,
+#“Criminal and Civil Actions”) * Link associated with the #enforcement action
+
+
 
 ```
 
@@ -76,6 +97,8 @@ alt.renderers.enable("png")
 * b. Create Dynamic Scraper
 
 ```{python}
+
+
 
 ```
 
