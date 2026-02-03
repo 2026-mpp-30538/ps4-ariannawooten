@@ -61,7 +61,7 @@ alt.renderers.enable("png")
 
 ## Step 1: Develop initial scraper and crawler
 
-
+Reading in the data and parsing with BeautifulSoup: 
 ```{python}
 import requests 
 
@@ -79,9 +79,18 @@ soup = BeautifulSoup(text, 'lxml')
 print(soup)
 ```
 
+After manually inspecting the site's HTML code, I think the title is <a> (nested in <h2>), the date is <span>, the category is <li>, and the link is <a> (nested inside of the title tag). 
+
+The data I want starts about halfway into the HTML code.
+Desired tag ranges (e.g. I want the 82nd <a> tag through the 126th):
+<a> tag: 82- ?
+<span> tag:28 - ?
+<li> tag: 90 - ?
+
+
+
 ```{python}
-#Scrape the following into a dataframe: * Title of the enforcement action * Date * Category (e.g,
-#“Criminal and Civil Actions”) * Link associated with the #enforcement action
+
 
 
 
