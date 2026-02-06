@@ -79,20 +79,86 @@ soup = BeautifulSoup(text, 'lxml')
 print(soup)
 ```
 
-After manually inspecting the site's HTML code, I think the title is <a> (nested in <h2>), the date is <span>, the category is <li>, and the link is <a> (nested inside of the title tag). 
+After manually inspecting the site's HTML code, I think the title is <a> (nested in <h2>, nested in <header>, nested in <div>), the date is <span>, the category is <li> nested in <ul>, and the link is <a> (nested inside of the title tag). 
 
-The data I want starts about halfway into the HTML code.
+The data I want starts about halfway into the HTML code under the tag <main>.
 Desired tag ranges (e.g. I want the 82nd <a> tag through the 126th):
-<a> tag: 82- ?
-<span> tag:28 - ?
+<a> tag: 82 - ? 
+  7 - ? in <main>
+<span> tag: 28 - ?
 <li> tag: 90 - ?
 
 
 
 ```{python}
+# Subset the HTML data to the <main> tag because all the data is nested within "main" and I want to exclude code for the site's headers, footers, etc.
+main = soup.find('main')
 
+# Use .find_all to find all the tags mentioned above.
+# These variables are messy and return code that includes more than just the text of the data that I want.
+titles = main.find_all('a') # currently same as links
+categories = main.find_all('li')
+links = main.find_all('a') # currently same as titles
+dates = main.find_all('span')
 
+# Find the first tag that I want for each and see the output:
 
+titles[5] # output: <a href="/fraud/enforcement/houston-transplant-doctor-indicted-for-making-false-statements-in-patients-medical-records/">Houston Transplant Doctor Indicted For Making False Statements In Patients’ Medical Records</a>
+
+categories[6] # <li class="display-inline-block usa-tag text-no-lowercase text-base-darkest bg-base-lightest margin-right-1">Criminal and Civil Actions</li>
+
+links[5] # <a href="/fraud/enforcement/houston-transplant-doctor-indicted-for-making-false-statements-in-patients-medical-records/">Houston Transplant Doctor Indicted For Making False Statements In Patients’ Medical Records</a>
+
+dates[14] # <span class="text-base-dark padding-right-105">February 5, 2026</span>
+
+```
+```{python}
+# For each data type, figure out how to extract the part of the tag that I want
+
+title1 = titles[5].text 
+title1 # returns the title
+
+cat1 = categories[6].text
+cat1
+
+link1 = links[5].get('href')
+link1 #not the full link rn
+
+date1 = dates[14].text
+date1
+
+# Use for loops to put all of the data into lists
+
+data_titles = []
+for i in titles[5:]: # start loop at titltes[6]
+  data_titles.append([i.text]) # add it to data_titles
+
+data_cats = []
+for i in categories[6:]: 
+  text = i.text.strip()
+  if text.startswith(('Child', 'CIA', 'CMP', 'COVID', 'Criminal', 'EMTALA', 'Fraud', 'Grant', 'State', 'Stipulated')): # source: https://www.w3schools.com/python/ref_string_startswith.asp
+    data_cats.append([text]) 
+  
+data_links = []
+for i in links[5:]: 
+  link = f"https://oig.hhs.gov{i.get('href')}"
+  data_links.append([link]) 
+
+data_date = []
+for i in dates[14:]: 
+  data_date.append([i.text]) 
+```
+```{python}
+# get rid of any weird accidental values
+#data_titles = data_titles[0:20] #20 rows
+
+data_cats # 23 rows looks good as is
+data_links
+# create the dataframe
+
+#df = pd.DataFrame({'title': data_titles, 'category': data_cats, 'link': data_links, 'date': data_date})
+
+data_titles
 
 ```
 
