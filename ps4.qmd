@@ -97,15 +97,17 @@ main = soup.find('main')
 # Use .find_all to find all the tags mentioned above.
 # These variables are messy and return code that includes more than just the text of the data that I want.
 titles = main.find_all('a') # currently same as links
-categories = main.find_all('li')
+categories = main.find_all('ul')
 links = main.find_all('a') # currently same as titles
 dates = main.find_all('span')
+```
 
+```{python}
 # Find the first tag that I want for each and see the output:
 
 titles[5] # output: <a href="/fraud/enforcement/houston-transplant-doctor-indicted-for-making-false-statements-in-patients-medical-records/">Houston Transplant Doctor Indicted For Making False Statements In Patients’ Medical Records</a>
 
-categories[6] # <li class="display-inline-block usa-tag text-no-lowercase text-base-darkest bg-base-lightest margin-right-1">Criminal and Civil Actions</li>
+categories[1] # super long output
 
 links[5] # <a href="/fraud/enforcement/houston-transplant-doctor-indicted-for-making-false-statements-in-patients-medical-records/">Houston Transplant Doctor Indicted For Making False Statements In Patients’ Medical Records</a>
 
@@ -118,15 +120,18 @@ dates[14] # <span class="text-base-dark padding-right-105">February 5, 2026</spa
 title1 = titles[5].text 
 title1 # returns the title
 
-cat1 = categories[6].text
+cat1 = categories[2].find('li').text
 cat1
 
 link1 = links[5].get('href')
-link1 #not the full link rn
+link1 #not the full link yet
 
 date1 = dates[14].text
 date1
 
+```
+
+```{python}
 # Use for loops to put all of the data into lists
 
 data_titles = []
@@ -134,8 +139,8 @@ for i in titles[5:]: # start loop at titltes[6]
   data_titles.append([i.text]) # add it to data_titles
 
 data_cats = []
-for i in categories[6:]: 
-  text = i.text.strip()
+for i in categories[2:]: 
+  text = i.find('li').text
   if text.startswith(('Child', 'CIA', 'CMP', 'COVID', 'Criminal', 'EMTALA', 'Fraud', 'Grant', 'State', 'Stipulated')): # source: https://www.w3schools.com/python/ref_string_startswith.asp
     data_cats.append([text]) 
   
@@ -144,21 +149,28 @@ for i in links[5:]:
   link = f"https://oig.hhs.gov{i.get('href')}"
   data_links.append([link]) 
 
-data_date = []
+data_dates = []
 for i in dates[14:]: 
-  data_date.append([i.text]) 
+  data_dates.append([i.text]) 
+
 ```
 ```{python}
-# get rid of any weird accidental values
-#data_titles = data_titles[0:20] #20 rows
+# get rid of any weird accidental values and make sure the data can line up as rows
+data_titles = data_titles[0:20] #20 rows
 
-data_cats # 23 rows looks good as is
-data_links
+data_cats # 20 rows, but I think it's only including the first category; some rows have multiple
+
+data_links = data_links[0:20] # 20 rows
+
+data_dates # 20 rows
+
+assert len(data_titles) == len(data_cats) == len(data_links) == len(data_dates), 'different lengths'
+
 # create the dataframe
 
-#df = pd.DataFrame({'title': data_titles, 'category': data_cats, 'link': data_links, 'date': data_date})
+df = pd.DataFrame({'title': data_titles, 'category': data_cats, 'link': data_links, 'date': data_dates})
 
-data_titles
+df
 
 ```
 
