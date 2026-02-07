@@ -97,8 +97,11 @@ main = soup.find('main')
 # Use .find_all to find all the tags mentioned above.
 # These variables are messy and return code that includes more than just the text of the data that I want.
 titles = main.find_all('a') # currently same as links
+
 categories = main.find_all('ul')
+
 links = main.find_all('a') # currently same as titles
+
 dates = main.find_all('span')
 ```
 
@@ -170,7 +173,7 @@ assert len(data_titles) == len(data_cats) == len(data_links) == len(data_dates),
 
 df = pd.DataFrame({'title': data_titles, 'category': data_cats, 'link': data_links, 'date': data_dates})
 
-df
+df.head() # thank god
 
 ```
 
@@ -180,27 +183,76 @@ df
 
 * a. Pseudo-Code
 
+name the function 
+define its arguments (month and year)
+use an if statement such that the commands will only run if the externally-defined indicator variable is set to True
+
+use an if statement such that an error message prints if the year is below 2013
+
+read in the html file
+parse the HTML code with beautifulsoup
+define a subset of the HTML code that includes the data, using the <main> tag 
+
+convert the inputs (month and year) to datetime objects
+create a variable for the page number
+
+subset the code by tag, one tag for each variable, with .find_all()
+run a for loop that iterates over page number
+  run an if else statement that collects the data if the month and year is equal to or past the input date
+combine the saved data into a dataframe
+print the dataframe's head
+
 
 * b. Create Dynamic Scraper
 
 ```{python}
+# datetime conversion: https://blog.finxter.com/5-best-ways-to-convert-integer-year-to-datetime-in-python/
+import datetime as dt
 
+run_fxn = True #indicator; function won't run if false
 
+def get_enforcement_actions(month, year):
+  if run_fxn == True:
+    if year < 2013:
+      print('Error: Date is out of range. Year must be >= 2013.')
+    url = 'https://oig.hhs.gov/fraud/enforcement/'
+    response = requests.get(url)
+    text = response.text
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(text, 'lxml')
+    main = soup.find('main')
+
+    monthyear = dt.datetime(year, month, 1)
+    page = 1
+
+    titles = main.find_all('a')
+    categories = main.find_all('ul')
+    links = main.find_all('a') 
+    dates = main.find_all('span')
+
+#get_enforcement_actions(month=1, year=2011)
 
 ```
 
 * c. Test Your Code
 
 ```{python}
-
+get_enforcement_actions(month=1, year=2022)
 ```
 
 ## Step 3: Plot data based on scraped data
 
 ### 1. Plot the number of enforcement actions over time
-
+Note: These plots are using hypothetical data and column names since I haven't been able to create the actual csv file yet. 
 ```{python}
 
+df2 = pd.read_csv('enforce-ment_actions_year_month.csv')
+df2022 = df2[df2['year' >= 2022]]
+
+chart1 = alt.Chart(df2022).mark_line().encode(
+  alt.X('monthyear:T', title = 'Month'),
+  alt.Y('count:Q', title = 'Number of Enforcement Actions')
+).properties(title = 'Number of Enforcement Actions by Month and Year')
 ```
 
 ### 2. Plot the number of enforcement actions categorized:
@@ -208,11 +260,33 @@ df
 * based on "Criminal and Civil Actions" vs. "State Enforcement Agencies"
 
 ```{python}
+# create two new dataframes-- one with only criminal and civil actions and one with only state enforcement agencies
+dfCCA = df2[df2['category' == 'Criminal and Civil Actions']]
+
+dfSEA = df2[df2['category' == 'State Enforcement Agencies']]
+
+CCAchart = alt.Chart(dfCCA).mark_line().encode(
+  alt.X('monthyear:T', title = 'Month'),
+  alt.Y('count:Q', title = 'Number of Enforcement Actions')
+)
+
+SEAchart = alt.Chart(dfSEA).mark_line().encode(
+  alt.X('monthyear:T', title = 'Month'),
+  alt.Y('count:Q', title = 'Number of Enforcement Actions')
+)
+
+chart2 = CCAchart + SEAchart
+chart2 = chart2.resolve_scale(y='shared')
+chart2 
 
 ```
 
 * based on five topics
-
+Five topics in the “Criminal and Civil Actions” category: “Health Care Fraud”,
+“Financial Fraud”, “Drug Enforcement”, “Bribery/Corruption”, and “Other”.
 ```{python}
-
+CCAchart = alt.Chart(dfCCA).mark_line().encode(
+  alt.X('monthyear:T', title = 'Month'),
+  alt.Y('count:Q', title = 'Number of Enforcement Actions')
+) 
 ```
